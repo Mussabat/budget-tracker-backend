@@ -11,7 +11,16 @@ router = APIRouter(
 
 @router.get("/{category_id}", response_model=list[SubcategoryResponse])
 def get_subcategories(category_id: int, db: Session = Depends(get_db)):
-    return db.query(Subcategory).filter(Subcategory.category_id == category_id).all()
+    subcategories = db.query(Subcategory).filter(Subcategory.category_id == category_id).all()
+    return [
+        {
+            "id": s.id,
+            "name": s.name,
+            "category_id": s.category_id,
+            "total_spent": sum(t.amount for t in s.transactions),
+        }
+        for s in subcategories
+    ]
 
 @router.post("/", response_model=SubcategoryResponse)
 def create_subcategory(payload: SubcategoryCreate, db: Session = Depends(get_db)):
