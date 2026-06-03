@@ -12,10 +12,10 @@ def seed_data():
 
     # Create categories
     categories = [
-        Category(name="Food", budget_limit=0.0),
-        Category(name="Bills", budget_limit=0.0),
-        Category(name="Travel", budget_limit=0.0),
-        Category(name="Toiletries", budget_limit=0.0),
+        Category(name="Food", budget_limit=300.0),
+        Category(name="Bills", budget_limit=2000.0),
+        Category(name="Travel", budget_limit=50.0),
+        Category(name="Toiletries", budget_limit=50.0),
     ]
 
     db.add_all(categories)
