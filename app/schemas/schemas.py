@@ -15,6 +15,7 @@ class CategoryUpdate(BaseModel):
 
 class CategoryResponse(CategoryBase):
     id: int
+    total_spent: float = 0.0
 
     class Config:
         from_attributes = True

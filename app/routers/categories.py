@@ -11,7 +11,20 @@ router = APIRouter(
 
 @router.get("/", response_model=list[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
-    return db.query(Category).all()
+    categories = db.query(Category).all()
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "budget_limit": c.budget_limit,
+            "total_spent": sum(
+                t.amount
+                for s in c.subcategories
+                for t in s.transactions
+            ),
+        }
+        for c in categories
+    ]
 
 @router.get("/{category_id}", response_model=CategoryResponse)
 def get_category(category_id: int, db: Session = Depends(get_db)):
