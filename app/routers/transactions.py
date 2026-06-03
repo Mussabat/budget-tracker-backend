@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import extract, func
 from app.database import get_db
 from app.models.models import Transaction, Subcategory, Category
-from app.schemas.schemas import TransactionCreate, TransactionResponse
+from app.schemas.schemas import TransactionCreate, TransactionUpdate, TransactionResponse
 from datetime import date
 
 router = APIRouter(
@@ -21,6 +21,34 @@ def create_transaction(payload: TransactionCreate, db: Session = Depends(get_db)
     db.commit()
     db.refresh(transaction)
     return transaction
+
+@router.get("/subcategory/{subcategory_id}", response_model=list[TransactionResponse])
+def get_transactions_by_subcategory(subcategory_id: int, db: Session = Depends(get_db)):
+    subcategory = db.query(Subcategory).filter(Subcategory.id == subcategory_id).first()
+    if not subcategory:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    return db.query(Transaction).filter(Transaction.subcategory_id == subcategory_id)\
+        .order_by(Transaction.date.desc()).all()
+
+@router.put("/{transaction_id}", response_model=TransactionResponse)
+def update_transaction(transaction_id: int, payload: TransactionUpdate, db: Session = Depends(get_db)):
+    transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    transaction.amount = payload.amount
+    transaction.date = payload.date
+    db.commit()
+    db.refresh(transaction)
+    return transaction
+
+@router.delete("/{transaction_id}")
+def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
+    transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    db.delete(transaction)
+    db.commit()
+    return {"detail": "Transaction deleted"}
 
 @router.get("/summary/{category_id}", response_model=dict)
 def get_monthly_summary(category_id: int, month: str, db: Session = Depends(get_db)):

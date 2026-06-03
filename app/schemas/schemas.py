@@ -49,6 +49,10 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     pass
 
+class TransactionUpdate(BaseModel):
+    amount: float
+    date: date
+
 class TransactionResponse(TransactionBase):
     id: int
 
