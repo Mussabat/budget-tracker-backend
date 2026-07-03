@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import Category
 from app.schemas.schemas import CategoryResponse, CategoryUpdate
+from datetime import date
 
 router = APIRouter(
     prefix="/categories",
@@ -11,6 +12,7 @@ router = APIRouter(
 
 @router.get("/", response_model=list[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
+    today = date.today()
     categories = db.query(Category).all()
     return [
         {
@@ -21,6 +23,7 @@ def get_categories(db: Session = Depends(get_db)):
                 t.amount
                 for s in c.subcategories
                 for t in s.transactions
+                if t.date.year == today.year and t.date.month == today.month
             ),
         }
         for c in categories

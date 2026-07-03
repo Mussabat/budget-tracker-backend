@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import Subcategory, Transaction
 from app.schemas.schemas import SubcategoryCreate, SubcategoryResponse, SubcategoryUpdate
+from datetime import date
 
 router = APIRouter(
     prefix="/subcategories",
@@ -11,13 +12,17 @@ router = APIRouter(
 
 @router.get("/{category_id}", response_model=list[SubcategoryResponse])
 def get_subcategories(category_id: int, db: Session = Depends(get_db)):
+    today = date.today()
     subcategories = db.query(Subcategory).filter(Subcategory.category_id == category_id).all()
     return [
         {
             "id": s.id,
             "name": s.name,
             "category_id": s.category_id,
-            "total_spent": sum(t.amount for t in s.transactions),
+            "total_spent": sum(
+                t.amount for t in s.transactions
+                if t.date.year == today.year and t.date.month == today.month
+            ),
         }
         for s in subcategories
     ]
