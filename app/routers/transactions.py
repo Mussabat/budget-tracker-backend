@@ -27,7 +27,11 @@ def get_transactions_by_subcategory(subcategory_id: int, db: Session = Depends(g
     subcategory = db.query(Subcategory).filter(Subcategory.id == subcategory_id).first()
     if not subcategory:
         raise HTTPException(status_code=404, detail="Subcategory not found")
-    return db.query(Transaction).filter(Transaction.subcategory_id == subcategory_id)\
+    today = date.today()
+    return db.query(Transaction)\
+        .filter(Transaction.subcategory_id == subcategory_id)\
+        .filter(extract("year", Transaction.date) == today.year)\
+        .filter(extract("month", Transaction.date) == today.month)\
         .order_by(Transaction.date.desc()).all()
 
 @router.put("/{transaction_id}", response_model=TransactionResponse)
