@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import Subcategory, Transaction
@@ -13,7 +14,12 @@ router = APIRouter(
 @router.get("/{category_id}", response_model=list[SubcategoryResponse])
 def get_subcategories(category_id: int, db: Session = Depends(get_db)):
     today = date.today()
-    subcategories = db.query(Subcategory).filter(Subcategory.category_id == category_id).all()
+    subcategories = (
+        db.query(Subcategory)
+        .filter(Subcategory.category_id == category_id)
+        .order_by(func.lower(Subcategory.name))
+        .all()
+    )
     return [
         {
             "id": s.id,
